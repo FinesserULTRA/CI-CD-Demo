@@ -91,20 +91,18 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      # Use system Python on self-hosted (Zorin 18); setup-python has no 22.04 build for generic "3.12"
-      - name: Use system Python
-        run: python3 --version && pip3 --version
-
       - name: Download frontend build
         uses: actions/download-artifact@v4
         with:
           name: frontend-build
           path: frontend/dist
 
-      - name: Install backend deps
+      # Use a venv to avoid PEP 668 externally-managed-environment on Zorin/Ubuntu
+      - name: Create backend venv and install deps
         run: |
-          python3 -m pip install --upgrade pip --user
-          python3 -m pip install -r backend/requirements.txt --user
+          python3 -m venv backend/.venv
+          backend/.venv/bin/python -m pip install --upgrade pip
+          backend/.venv/bin/pip install -r backend/requirements.txt
 
       - name: Install PM2
         run: npm install -g pm2
