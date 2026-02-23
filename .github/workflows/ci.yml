@@ -10,7 +10,7 @@ on:
 
 env:
   NODE_VERSION: "24.12.0"
-  PYTHON_VERSION: "3.12.3"
+  PYTHON_VERSION: "3.12.12"
 
 jobs:
   test:
