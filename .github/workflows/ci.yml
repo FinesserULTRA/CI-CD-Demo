@@ -39,7 +39,7 @@ jobs:
           pip install -r backend/requirements.txt
 
       - name: Backend tests
-        run: pytest tests/ -v --tb=short
+        run: python -m pytest tests/ -v --tb=short
         working-directory: backend
 
       - name: Install frontend deps
