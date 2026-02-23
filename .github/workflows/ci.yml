@@ -10,7 +10,7 @@ on:
 
 env:
   NODE_VERSION: "24.12.0"
-  PYTHON_VERSION: "3.12"
+  PYTHON_VERSION: "3.12.7"
 
 jobs:
   test:
@@ -91,12 +91,9 @@ jobs:
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: "pip"
-          cache-dependency-path: backend/requirements.txt
+      # Use system Python on self-hosted (Zorin 18); setup-python has no 22.04 build for generic "3.12"
+      - name: Use system Python
+        run: python3 --version && pip3 --version
 
       - name: Download frontend build
         uses: actions/download-artifact@v4
@@ -106,8 +103,8 @@ jobs:
 
       - name: Install backend deps
         run: |
-          python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+          python3 -m pip install --upgrade pip --user
+          python3 -m pip install -r backend/requirements.txt --user
 
       - name: Install PM2
         run: npm install -g pm2

@@ -7,8 +7,8 @@ module.exports = {
     {
       name: 'life-dashboard-api',
       cwd: './backend',
-      script: 'gunicorn',
-      args: '-w 2 -b 0.0.0.0:5000 app:app',
+      script: 'python3',
+      args: '-m gunicorn -w 2 -b 0.0.0.0:5000 app:app',
       interpreter: 'none',
       env: { FLASK_ENV: 'production' },
       autorestart: true,
