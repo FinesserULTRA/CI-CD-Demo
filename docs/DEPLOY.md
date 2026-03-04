@@ -62,21 +62,13 @@ Use your repo URL and the token from the GitHub “Add runner” page.
 |---------|----------------|--------------|
 | **Test**  | GitHub (ubuntu-latest) | Installs backend + frontend deps, runs `pytest backend/tests/` and `npm run test` in `frontend/`. |
 | **Build** | GitHub (ubuntu-latest) | Builds frontend (`npm run build`), uploads `frontend/dist` as an artifact. |
-| **Deploy** | Your app server (self-hosted) | Checkout, downloads artifact into `frontend/dist`, installs backend deps, saves PM2 process list, then starts PM2 via systemd so it survives the job (see **PM2 one-time setup** below). |
+| **Deploy** | Your app server (self-hosted) | Checkout, downloads artifact into `frontend/dist`, installs backend deps, runs `pm2 start` then hands off to systemd so PM2 survives the job (one-time: run the `pm2 startup` sudo command; see below). |
 
 Deploy **only** runs on **push to `main`** (not on pull requests).
 
-## 4. PM2 one-time setup per server (sudoers only)
+## 4. PM2 one-time setup
 
-The runner **kills all processes when a job ends**, so the workflow starts PM2 via systemd. The workflow **installs the PM2 startup script automatically** (so you never run `pm2 startup` by hand). The only one-time step per server is **allowing the runner to run two commands with sudo** so the job doesn’t prompt for a password.
-
-On each app server, add a sudoers entry (recommended: a file in `/etc/sudoers.d/`). Replace `ultra` with the user that runs the runner, and ensure the repo path matches where your self-hosted runner checks out code (often `~/actions-runner/_work/<repo>/<repo>/...`).
-
-```bash
-ultra ALL=(ALL) NOPASSWD: /home/ultra/dev/life_dashboard/actions-runner/_work/CI-CD-Demo/CI-CD-Demo/deploy/pm2-install-startup.sh, /usr/bin/systemctl start pm2-ultra, /usr/bin/systemctl stop pm2-ultra
-```
-
-For many servers, add this line via your config management (Ansible, Salt, etc.) so you don’t touch each box by hand.
+The runner kills processes when the job ends, so the workflow starts PM2 via systemd (`sudo systemctl start pm2-$USER`). **Once per server**: run `pm2 save` then `pm2 startup`, then run the **exact** `sudo env PATH=... pm2 startup systemd -u YOUR_USER --hp /home/YOUR_USER` command it prints. After that, each deploy will keep PM2 running.
 
 ## 5. PM2 processes
 
@@ -92,6 +84,7 @@ pm2 restart all
 ```
 
 ## 6. Optional: lockfile for frontend
+
 
 For reliable CI installs, add a lockfile in the frontend:
 
