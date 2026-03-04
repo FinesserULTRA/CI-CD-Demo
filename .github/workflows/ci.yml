@@ -107,9 +107,14 @@ jobs:
       - name: Install PM2
         run: npm install -g pm2
 
+      # PM2 started by the job is killed when the job exits (runner cleans up process tree).
+      # So we save the process list, kill the job's daemon, then start PM2 via systemd
+      # so it survives. Requires one-time: run the "pm2 startup" sudo command and
+      # (if runner uses sudo) NOPASSWD for systemctl start pm2-<user>. See docs/DEPLOY.md.
       - name: Deploy with PM2
         run: |
           pm2 delete all || true
           pm2 start ecosystem.config.cjs
           pm2 save
-          pm2 startup || true
+          pm2 kill
+          sudo systemctl start "pm2-$USER"
