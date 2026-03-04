@@ -109,7 +109,11 @@ jobs:
 
       # Install/refresh PM2 systemd startup (idempotent). Needs NOPASSWD for this script; see docs/DEPLOY.md.
       - name: Ensure PM2 startup script installed
-        run: sudo env PATH="$PATH" "$GITHUB_WORKSPACE/deploy/pm2-install-startup.sh"
+        run: |
+          sudo -n env PATH="$PATH" "$GITHUB_WORKSPACE/deploy/pm2-install-startup.sh" || {
+            echo "::error::Deploy requires non-interactive sudo (NOPASSWD) for PM2 startup + systemctl. See docs/DEPLOY.md."
+            exit 1
+          }
 
       # PM2 started by the job is killed when the job exits (runner cleans up process tree).
       # So we save the process list, kill the job's daemon, then start PM2 via systemd so it survives.
@@ -119,4 +123,7 @@ jobs:
           pm2 start ecosystem.config.cjs
           pm2 save
           pm2 kill
-          sudo systemctl start "pm2-$USER"
+          sudo -n systemctl start "pm2-$USER" || {
+            echo "::error::systemctl start pm2-$USER needs NOPASSWD sudo. See docs/DEPLOY.md."
+            exit 1
+          }
