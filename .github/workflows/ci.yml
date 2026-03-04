@@ -88,8 +88,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
+          cache: false
 
       - name: Download frontend build
         uses: actions/download-artifact@v4
